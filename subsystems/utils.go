@@ -10,6 +10,7 @@ import (
 
 // FindCgroupMountpoint <mount ID> <parent ID> <major:minor> <root> <mount point> <mount options> - <filesystem type> <source> <super options>
 // FindCgroupMountpoint 格式如上，Fileds[4]是挂载的位置,所以能够返回
+// 由于系统的问题，这里memory我们就不设置了，我们memory要设置还要加其他的参数
 func FindCgroupMountpoint(subsystem string) string {
 	f, err := os.Open("/proc/self/mountinfo")
 	if err != nil {
@@ -41,6 +42,9 @@ func FindCgroupMountpoint(subsystem string) string {
 // GetCgroupPath 得到cgroup在文件系统中的绝对位置
 func GetCgroupPath(subsystem string, cgroupPath string, autoCreate bool) (string, error) {
 	cgroupRoot := FindCgroupMountpoint(subsystem)
+	if cgroupRoot == "" {
+		return "", fmt.Errorf("subsystem %s not found in /proc/self/mountinfo", subsystem)
+	}
 	if _, err := os.Stat(path.Join(cgroupRoot, cgroupPath)); err == nil || (autoCreate && os.IsNotExist(err)) {
 		if os.IsNotExist(err) {
 			if err := os.MkdirAll(path.Join(cgroupRoot, cgroupPath), 0755); err == nil {
