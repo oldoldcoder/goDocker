@@ -2,6 +2,7 @@ package main
 
 import (
 	"GoDocker/container"
+	"GoDocker/subsystems"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -16,25 +17,36 @@ var runCommand = cli.Command{
 			Name:  "it",
 			Usage: "enable tty",
 		},
+		cli.StringFlag{
+			Name:  "m",
+			Usage: "memory limit",
+		},
+		cli.StringFlag{
+			Name:  "cpushare",
+			Usage: "cpushare limit",
+		},
+		cli.StringFlag{
+			Name:  "cpuset",
+			Usage: "cpuset limit",
+		},
 	},
 	Action: func(ctx *cli.Context) error {
 		if len(ctx.Args()) < 1 {
 			return fmt.Errorf("missing container command")
 		}
-		cmd := ctx.Args().Get(0)
+		var cmd []string
+		// Args是解析后去除run命令以及其他匹配参数之外，其他的参数内容
+		for _, arg := range ctx.Args() {
+			cmd = append(cmd, arg)
+		}
 		tty := ctx.BoolT("it")
+		res := &subsystems.ResourceConfig{
+			MemoryLimit: ctx.String("m"),
+			CpuSet:      ctx.String("cpushare"),
+			CpuShare:    ctx.String("cpuset"),
+		}
 		// 调用run function启动容器
-		Run(tty, cmd)
-
-		// 确保程序退出时挂载 /proc
-		defer func() {
-			// 在这里挂载 /proc
-			if err := syscall.Mount("proc", "/proc", "proc", 0, ""); err != nil {
-				log.Errorf("Failed to mount /proc: %v", err)
-			} else {
-				log.Infof("/proc mounted successfully")
-			}
-		}()
+		Run(tty, cmd, res)
 
 		return nil
 	},
@@ -45,10 +57,9 @@ var initCommand = cli.Command{
 	Usage: "Init container process run user’s process in container. " +
 		"Do not call it outside",
 	Action: func(ctx *cli.Context) error {
-		log.Infof("init come on")
-		cmd := ctx.Args().Get(0)
+
 		log.Infof("cmd: %s", cmd)
-		container.RunContainerInitProcess(cmd, nil)
+		container.RunContainerInitProcess()
 		return nil
 	},
 }
