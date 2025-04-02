@@ -24,7 +24,8 @@ type Subsystem interface {
 var (
 	Ins = []Subsystem{
 		&CpuSetSubSystem{},
-		&MemorySubsystem{},
+		// 内存这个有问题在我们机器上面，先删除掉
+		// &MemorySubsystem{},
 		&CpuSubSystem{},
 	}
 )

@@ -90,7 +90,7 @@ func (subsystem *CpuSetSubSystem) Name() string {
 func (subsystem *CpuSetSubSystem) Apply(cgroupPath string, pid int) error {
 	if subsysCgroupPath, err := GetCgroupPath(subsystem.Name(), cgroupPath, false); err == nil {
 		if err := os.WriteFile(path.Join(subsysCgroupPath, "tasks"), []byte(strconv.Itoa(pid)), 0644); err != nil {
-			return fmt.Errorf("apply cgroup memory fail: %v", err)
+			return fmt.Errorf("apply cgroup cpuset fail: %v", err)
 		}
 		return nil
 	} else {

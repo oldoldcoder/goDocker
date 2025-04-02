@@ -6,7 +6,6 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
-	"syscall"
 )
 
 var runCommand = cli.Command{
@@ -42,8 +41,8 @@ var runCommand = cli.Command{
 		tty := ctx.BoolT("it")
 		res := &subsystems.ResourceConfig{
 			MemoryLimit: ctx.String("m"),
-			CpuSet:      ctx.String("cpushare"),
-			CpuShare:    ctx.String("cpuset"),
+			CpuSet:      ctx.String("cpuset"),
+			CpuShare:    ctx.String("cpushare"),
 		}
 		// 调用run function启动容器
 		Run(tty, cmd, res)
@@ -57,8 +56,7 @@ var initCommand = cli.Command{
 	Usage: "Init container process run user’s process in container. " +
 		"Do not call it outside",
 	Action: func(ctx *cli.Context) error {
-
-		log.Infof("cmd: %s", cmd)
+		log.Infof("init come on")
 		container.RunContainerInitProcess()
 		return nil
 	},
