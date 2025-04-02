@@ -16,7 +16,12 @@ func Run(tty bool, cmd []string, res *subsystems.ResourceConfig) {
 	}
 	// 创建cgroup manager 并且通过调用set和apply设置资源限制并且使限制在容器上生效
 	cgroupManager := subsystems.NewCgroupManager("docker_cgroup")
-	defer cgroupManager.Destroy()
+	defer func(cgroupManager *subsystems.CgroupManager) {
+		err := cgroupManager.Destroy()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(cgroupManager)
 	// 设置开启相应的文件夹
 	err := cgroupManager.Set(res)
 	if err != nil {
@@ -27,9 +32,9 @@ func Run(tty bool, cmd []string, res *subsystems.ResourceConfig) {
 	if err != nil {
 		log.Errorf("cgroup manager apply error:%v", err)
 	}
-	// 发送信息？
-	_ = parent.Wait()
+	// send通过writePipe来发送消息给进程
 	sendInitCommand(cmd, writePipe)
+	_ = parent.Wait()
 	os.Exit(-1)
 }
 
